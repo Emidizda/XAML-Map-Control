@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -315,7 +316,8 @@ namespace VectorTileRenderer
             }
 
             // defered rendering to preserve text drawing order
-            foreach (var layer in visualLayers.OrderBy(item => item.Brush.ZIndex))
+            //foreach (var layer in visualLayers.OrderBy(item => item.Brush.ZIndex))
+            foreach (var layer in visualLayers)
             {
                 if (layer.Type == VisualLayerType.Vector)
                 {
@@ -364,7 +366,7 @@ namespace VectorTileRenderer
                     }
                     catch (Exception)
                     {
-
+                        Debug.WriteLine("Failed to draw Point, lineString, Polygon or Unknown!");
                     }
                 }
                 else if (layer.Type == VisualLayerType.Raster)

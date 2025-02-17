@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -285,7 +286,8 @@ namespace VectorTileRenderer
                 fillPaint.PathEffect = effect;
             }
 
-            //Console.WriteLine(style.Paint.LineWidth);
+            //Debug.WriteLine("CANVAS LINE WIDTH: " + style.Paint.LineWidth);
+            //Debug.WriteLine("COLOR: " + fillPaint.Color);
 
             canvas.DrawPath(path, fillPaint);
         }

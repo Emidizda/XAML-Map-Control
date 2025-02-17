@@ -1,10 +1,12 @@
-﻿using Mapbox.VectorTile.Geometry;
+﻿//using Mapbox.VectorTile.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Windows;
+using Mapbox.Vector.Tile;
 
 namespace VectorTileRenderer.Sources
 {
@@ -68,21 +70,23 @@ namespace VectorTileRenderer.Sources
         
         private async Task<VectorTile> loadStream(Stream stream)
         {
-            var mbLayers = new Mapbox.VectorTile.VectorTile(readTillEnd(stream));
+            //var mbLayers = new Mapbox.VectorTile.VectorTile(readTillEnd(stream));
+           
+            List<Mapbox.Vector.Tile.VectorTileLayer> vectorTileLayers = VectorTileParser.Parse(stream);
 
-            return await baseTileToVector(mbLayers);
+            return await baseTileToVector(vectorTileLayers);
         }
 
-        static string convertGeometryType(GeomType type)
+        static string convertGeometryType(Tile.GeomType type)
         {
-            if (type == GeomType.LINESTRING)
+            if (type == Tile.GeomType.LineString)
             {
                 return "LineString";
-            } else if (type == GeomType.POINT)
+            } else if (type == Tile.GeomType.Point)
             {
                 return "Point";
             }
-            else if (type == GeomType.POLYGON)
+            else if (type == Tile.GeomType.Polygon)
             {
                 return "Polygon";
             } else
@@ -93,55 +97,98 @@ namespace VectorTileRenderer.Sources
 
         private static async Task<VectorTile> baseTileToVector(object baseTile)
         {
-            var tile = baseTile as Mapbox.VectorTile.VectorTile;
-            var result = new VectorTile();
-
-            foreach (var lyrName in tile.LayerNames())
+            //var tile = baseTile as Mapbox.VectorTile.VectorTile;
+            if (baseTile is List<Mapbox.Vector.Tile.VectorTileLayer> layerInfos)
             {
-                Mapbox.VectorTile.VectorTileLayer lyr = tile.GetLayer(lyrName);
+                //var layerInfo = layerInfos[0];
+                var result = new VectorTile();
 
-                var vectorLayer = new VectorTileLayer();
-                vectorLayer.Name = lyrName;
-
-                for (int i = 0; i < lyr.FeatureCount(); i++)
+                foreach (var layerInfo in layerInfos)
                 {
-                    Mapbox.VectorTile.VectorTileFeature feat = lyr.GetFeature(i);
+                    Debug.WriteLine(layerInfo.Name);
+                    var vectorLayer = new VectorTileLayer();
+                    vectorLayer.Name = layerInfo.Name;
 
-                    var vectorFeature = new VectorTileFeature();
-                    vectorFeature.Extent = 1;
-                    vectorFeature.GeometryType = convertGeometryType(feat.GeometryType);
-                    vectorFeature.Attributes = feat.GetProperties();
-
-                    var vectorGeometry = new List<List<Point>>();
-
-                    foreach (var points in feat.Geometry<int>())
+                    foreach (Mapbox.Vector.Tile.VectorTileFeature layerInfoVectorTileFeature in layerInfo.VectorTileFeatures)
                     {
-                        var vectorPoints = new List<Point>();
+                        var vectorFeature = new VectorTileFeature();
+                        //TODO extent was 1 here?
+                        vectorFeature.Extent = layerInfoVectorTileFeature.Extent;
+                        vectorFeature.GeometryType = convertGeometryType(layerInfoVectorTileFeature.GeometryType);
+                        vectorFeature.Attributes = layerInfoVectorTileFeature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-                        foreach (var coordinate in points)
+                        var vectorGeometry = new List<List<Point>>();
+
+                        foreach (List<Coordinate> coordinates in layerInfoVectorTileFeature.Geometry)
                         {
-                            var dX = (double)coordinate.X / (double)lyr.Extent;
-                            var dY = (double)coordinate.Y / (double)lyr.Extent;
-
-                            vectorPoints.Add(new Point(dX, dY));
-
-                            //var newX = Utils.ConvertRange(dX, extent.Left, extent.Right, 0, vectorFeature.Extent);
-                            //var newY = Utils.ConvertRange(dY, extent.Top, extent.Bottom, 0, vectorFeature.Extent);
-
-                            //vectorPoints.Add(new Point(newX, newY));
+                            var vectorPoints = new List<Point>();
+                            foreach (Coordinate coordinate in coordinates)
+                            {
+                                var dX = (double)coordinate.X / (double)vectorFeature.Extent;
+                                var dY = (double)coordinate.Y / (double)vectorFeature.Extent;
+                                vectorPoints.Add(new Point(dX, dY));
+                            }
+                            vectorGeometry.Add(vectorPoints);
                         }
+                        vectorFeature.Geometry = vectorGeometry;
+                        vectorLayer.Features.Add(vectorFeature);
 
-                        vectorGeometry.Add(vectorPoints);
                     }
-
-                    vectorFeature.Geometry = vectorGeometry;
-                    vectorLayer.Features.Add(vectorFeature);
+                    result.Layers.Add(vectorLayer);
                 }
 
-                result.Layers.Add(vectorLayer);
+                return result;
+
+                //foreach (var lyrName in layerInfos)
+                //{
+                //    Mapbox.VectorTile.VectorTileLayer lyr = tile.GetLayer(lyrName);
+
+                //    var vectorLayer = new VectorTileLayer();
+                //    vectorLayer.Name = lyrName;
+
+                //    for (int i = 0; i < lyr.FeatureCount(); i++)
+                //    {
+                //        Mapbox.VectorTile.VectorTileFeature feat = lyr.GetFeature(i);
+
+                //        var vectorFeature = new VectorTileFeature();
+                //        vectorFeature.Extent = 1;
+                //        vectorFeature.GeometryType = convertGeometryType(feat.GeometryType);
+                //        vectorFeature.Attributes = feat.GetProperties();
+
+                //        var vectorGeometry = new List<List<Point>>();
+
+                //        foreach (var points in feat.Geometry<int>())
+                //        {
+                //            var vectorPoints = new List<Point>();
+
+                //            foreach (var coordinate in points)
+                //            {
+                //                var dX = (double)coordinate.X / (double)lyr.Extent;
+                //                var dY = (double)coordinate.Y / (double)lyr.Extent;
+
+                //                vectorPoints.Add(new Point(dX, dY));
+
+                //                //var newX = Utils.ConvertRange(dX, extent.Left, extent.Right, 0, vectorFeature.Extent);
+                //                //var newY = Utils.ConvertRange(dY, extent.Top, extent.Bottom, 0, vectorFeature.Extent);
+
+                //                //vectorPoints.Add(new Point(newX, newY));
+                //            }
+
+                //            vectorGeometry.Add(vectorPoints);
+                //        }
+
+                //        vectorFeature.Geometry = vectorGeometry;
+                //        vectorLayer.Features.Add(vectorFeature);
+                //    }
+
+                //    result.Layers.Add(vectorLayer);
+                //}
+
+                return result;
             }
 
-            return result;
+            return null;
+
         }
         
         byte[] readTillEnd(Stream input)
