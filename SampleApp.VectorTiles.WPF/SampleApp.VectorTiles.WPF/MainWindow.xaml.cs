@@ -30,8 +30,14 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Zurich_mbtiles(object sender, RoutedEventArgs e)
         {
-            zurichMbTilesAliFluxStyle();
-           // showMbTiles(mainDir + @"tiles/islamabad.mbtiles", mainDir + @"styles/bright-style.json", 1438, 1226, 1440, 1228, 11, 512);
+            int zoom = 5;
+            var coords = gmt.LatLonToTile(47.382047, 8.525868, zoom);
+            //  showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
+            showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 512);
+
+           // showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 14, 512);
+            // zurichMbTilesAliFluxStyle();
+            // showMbTiles(mainDir + @"tiles/islamabad.mbtiles", mainDir + @"styles/bright-style.json", 1438, 1226, 1440, 1228, 11, 512);
             //showPbf(mainDir + @"tiles/islamabad.pbf", mainDir + @"styles/basic-style.json", 11, 512, 2);
             //  showPbf(mainDir + @"tiles/zurich.pbf.gz", mainDir + @"styles/basic-style.json", 14);
         }
@@ -85,7 +91,7 @@ namespace SampleApp.VectorTiles.WPF
             // merge the tiles and show it
             if (bitmapSources[0,0] != null)
             {
-                var bitmap = mergeBitmaps(bitmapSources);
+                var bitmap = MergeBitmaps(bitmapSources);
                 demoImage.Source = bitmap;
             }
             
@@ -97,7 +103,7 @@ namespace SampleApp.VectorTiles.WPF
             Console.WriteLine(elapsedMs + "ms time");
         }
 
-        BitmapSource mergeBitmaps(BitmapSource[,] bitmapSources)
+        BitmapSource MergeBitmaps(BitmapSource[,] bitmapSources)
         {
             DrawingVisual drawingVisual = new DrawingVisual();
             using (DrawingContext drawingContext = drawingVisual.RenderOpen())
@@ -126,31 +132,40 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Zuric_pbf(object sender, RoutedEventArgs e)
         {
-            showPbf(mainDir + @"tiles/zurich.pbf", mainDir + @"styles/basic-style.json", 14);
+            //ShowPbf(mainDir + @"tiles/zurich.pbf.gz", mainDir + @"styles/basic-style.json", 14);
+            ShowPbf(mainDir + @"tiles/newyork-mapbox.pbf", mainDir + @"styles/streets-style.json", 11);
+
         }
 
-        async void showPbf(string path, string stylePath, double zoom, double size = 512, double scale = 1)
+        async void ShowPbf(string path, string stylePath, double zoom, double size = 512, double scale = 1)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            // load style and font
-            var style = new VectorTileRenderer.Style(stylePath);
-            style.FontDirectory = mainDir + @"styles/fonts/";
+                // load style and font
+                var style = new VectorTileRenderer.Style(stylePath);
+                style.FontDirectory = mainDir + @"styles/fonts/";
 
-            // set pbf as tile provider
-            var provider = new VectorTileRenderer.Sources.PbfTileSource(path);
-            style.SetSourceProvider(0, provider);
+                // set pbf as tile provider
+                var provider = new VectorTileRenderer.Sources.PbfTileSource(path);
+                style.SetSourceProvider(0, provider);
 
-            // render it on a skia canvas
-            var canvas = new SkiaCanvas();
-            var bitmapR = await Renderer.Render(style, canvas, 0, 0, zoom, size, size, scale);
-            demoImage.Source = bitmapR;
+                // render it on a skia canvas
+                var canvas = new SkiaCanvas();
+                var bitmapR = await Renderer.Render(style, canvas, 0, 0, zoom, size, size, scale);
+                demoImage.Source = bitmapR;
 
-            scrollViewer.Background = new SolidColorBrush(style.GetBackgroundColor(zoom));
+                scrollViewer.Background = new SolidColorBrush(style.GetBackgroundColor(zoom));
 
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-            Console.WriteLine(elapsedMs + "ms time");
+                watch.Stop();
+                var elapsedMs = watch.ElapsedMilliseconds;
+                Console.WriteLine(elapsedMs + "ms time");
+            }
+            catch (Exception e)
+            {
+               Debug.WriteLine("PBF failed to load");
+            }
         }
     }
 }

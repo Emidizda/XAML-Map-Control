@@ -74,10 +74,10 @@ namespace VectorTileRenderer.Sources
            
             List<Mapbox.Vector.Tile.VectorTileLayer> vectorTileLayers = VectorTileParser.Parse(stream);
 
-            return await baseTileToVector(vectorTileLayers);
+            return await BaseTileToVector(vectorTileLayers);
         }
 
-        static string convertGeometryType(Tile.GeomType type)
+        static string ConvertGeometryType(Tile.GeomType type)
         {
             if (type == Tile.GeomType.LineString)
             {
@@ -95,7 +95,7 @@ namespace VectorTileRenderer.Sources
             }
         }
 
-        private static async Task<VectorTile> baseTileToVector(object baseTile)
+        private static async Task<VectorTile> BaseTileToVector(object baseTile)
         {
             //var tile = baseTile as Mapbox.VectorTile.VectorTile;
             if (baseTile is List<Mapbox.Vector.Tile.VectorTileLayer> layerInfos)
@@ -113,8 +113,8 @@ namespace VectorTileRenderer.Sources
                     {
                         var vectorFeature = new VectorTileFeature();
                         //TODO extent was 1 here?
-                        vectorFeature.Extent = layerInfoVectorTileFeature.Extent;
-                        vectorFeature.GeometryType = convertGeometryType(layerInfoVectorTileFeature.GeometryType);
+                        vectorFeature.Extent = 1;
+                        vectorFeature.GeometryType = ConvertGeometryType(layerInfoVectorTileFeature.GeometryType);
                         vectorFeature.Attributes = layerInfoVectorTileFeature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
                         var vectorGeometry = new List<List<Point>>();
@@ -124,8 +124,8 @@ namespace VectorTileRenderer.Sources
                             var vectorPoints = new List<Point>();
                             foreach (Coordinate coordinate in coordinates)
                             {
-                                var dX = (double)coordinate.X / (double)vectorFeature.Extent;
-                                var dY = (double)coordinate.Y / (double)vectorFeature.Extent;
+                                var dX = (double)coordinate.X / (double)layerInfoVectorTileFeature.Extent;
+                                var dY = (double)coordinate.Y / (double)layerInfoVectorTileFeature.Extent;
                                 vectorPoints.Add(new Point(dX, dY));
                             }
                             vectorGeometry.Add(vectorPoints);

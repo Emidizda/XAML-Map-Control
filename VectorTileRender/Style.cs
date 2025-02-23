@@ -1,14 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using VectorTileRenderer.Helpers;
+using static Mapbox.Vector.Tile.Tile;
 
 //using ClipperLib;
 
@@ -130,10 +128,10 @@ namespace VectorTileRenderer
 
     public class Style
     {
-        public readonly string Hash = "";
+        public string Hash = "";
         public List<Layer> Layers = new List<Layer>();
         public Dictionary<string, Source> Sources = new Dictionary<string, Source>();
-        public Dictionary<string, object> Metadata = new Dictionary<string, object>();
+        public Dictionary<string, object>? Metadata = new Dictionary<string, object>();
         //double screenScale = 0.2;// = 0.3;
         //double emToPx = 16;
 
@@ -143,12 +141,20 @@ namespace VectorTileRenderer
 
         public Style(string path, double scale = 1)
         {
+            ParseStyleJson(path, scale);
+            return;
             var json = System.IO.File.ReadAllText(path);
             dynamic jObject = JObject.Parse(json);
 
             if (jObject["metadata"] != null)
             {
-                Metadata = jObject.metadata.ToObject<Dictionary<string, object>>();
+                Metadata = ((JObject)jObject["metadata"]).ToObject<Dictionary<string, object>>();
+            }
+
+            if (jObject["sources"] != null)
+            {
+                List<Dictionary<string, object>> sources =
+                    ((JArray)jObject["sources"]).ToObject<List<Dictionary<string, object>>>();
             }
 
             List<string> fontNames = new List<string>();
@@ -247,6 +253,142 @@ namespace VectorTileRenderer
             Hash = Utils.Sha256(json);
         }
 
+        private void ParseStyleJson(string path, double scale = 1)
+        {
+            var json = System.IO.File.ReadAllText(path);
+            dynamic jObject = JObject.Parse(json);
+
+            if (jObject["metadata"] != null)
+            {
+                Metadata = ((JObject)jObject["metadata"]).ToObject<Dictionary<string, object>>();
+            }
+
+            if (jObject["sources"] != null)
+            {
+                if (jObject["sources"] is JArray)
+                {
+                    //TODO do we need this also?
+                }
+                else if (jObject["sources"] is JObject)
+                {
+                    Dictionary<string, object> singleSource =
+                        jObject["sources"].ToObject<Dictionary<string, object>>();
+                    PopulateSourceDictionary(singleSource);
+                }
+            }
+
+            if (jObject["layers"] != null)
+            {
+                if (jObject["layers"] is JArray)
+                {
+                    List<Dictionary<string, JToken>> layers =
+                        jObject["layers"].ToObject<List<Dictionary<string, JToken>>>();
+                    PopulateLayerList(layers);
+                }
+                else if (jObject["layers"] is JObject)
+                {
+                    //TODO do we need this also? Can this happen?
+                    Dictionary<string, object> singleSource =
+                        jObject["layers"].ToObject<Dictionary<string, object>>();
+                }
+            }
+
+            Hash = Utils.Sha256(json);
+
+        }
+
+        private void PopulateLayerList(List<Dictionary<string, JToken>> layersDictionary)
+        {
+            int i = 0;
+            foreach (Dictionary<string, JToken> layerDict in layersDictionary)
+            {
+                var layer = new Layer();
+                layer.Index = i;
+                if (layerDict.ContainsKey("minzoom"))
+                {
+                    layer.MinZoom = Convert.ToDouble(plainifyJson(layerDict["minzoom"]));
+                }
+
+                if (layerDict.ContainsKey("maxzoom"))
+                {
+                    layer.MaxZoom = Convert.ToDouble(plainifyJson(layerDict["maxzoom"]));
+                }
+
+                if (layerDict.ContainsKey("id"))
+                {
+                    layer.ID = plainifyJson(layerDict["id"]) as string;
+                }
+
+                if (layerDict.ContainsKey("type"))
+                {
+                    layer.Type = plainifyJson(layerDict["type"]) as string;
+                }
+
+                if (layerDict.ContainsKey("source"))
+                {
+                    layer.SourceName = plainifyJson(layerDict["source"]) as string;
+                    layer.Source = Sources[layer.SourceName];
+                }
+
+                if (layerDict.ContainsKey("source-layer"))
+                {
+                    layer.SourceLayer = plainifyJson(layerDict["source-layer"]) as string;
+                }
+
+                if (layerDict.ContainsKey("paint"))
+                {
+                    layer.Paint = plainifyJson(layerDict["paint"]) as Dictionary<string, object>;
+                }
+
+                if (layerDict.ContainsKey("layout"))
+                {
+                    layer.Layout = plainifyJson(layerDict["layout"]) as Dictionary<string, object>;
+                }
+
+                if (layerDict.ContainsKey("filter"))
+                {
+                    var filterArray = layerDict["filter"] as JArray;
+                    layer.Filter = plainifyJson(filterArray) as object[];
+                }
+
+                Layers.Add(layer);
+
+                i++;
+            }
+
+        }
+
+        private void PopulateSourceDictionary(Dictionary<string, object> sourceDocDictionary)
+        {
+            foreach (KeyValuePair<string, object> keyValuePair in sourceDocDictionary)
+            {
+                var source = new Source();
+                source.Name = keyValuePair.Key;
+                IDictionary<string, JToken> sourceDict = keyValuePair.Value as JObject;
+
+                if (sourceDict.TryGetValue("url", out var url))
+                {
+                    source.URL = plainifyJson(url) as string;
+                }
+
+                if (sourceDict.TryGetValue("type", out var type))
+                {
+                    source.Type = plainifyJson(type) as string;
+                }
+
+                if (sourceDict.TryGetValue("minzoom", out var minZoom))
+                {
+                    source.MinZoom = Convert.ToDouble(plainifyJson(minZoom));
+                }
+
+                if (sourceDict.TryGetValue("maxzoom", out var maxZoom))
+                {
+                    source.MaxZoom = Convert.ToDouble(plainifyJson(maxZoom));
+                }
+
+                Sources[keyValuePair.Key] = source;
+            }
+        }
 
         public void SetSourceProvider(int index, Sources.ITileSource provider)
         {
@@ -669,9 +811,10 @@ namespace VectorTileRenderer
                 //    S = s,
                 //    L = l,
                 //}).ToRgb();
-                var color = ColorHelper.FromHsl(h, s, l);
+                var color = ColorHelper.HSLToRGB(h, s, l);
+               // var color = ColorHelper.FromHsl(h, s, l);
 
-                return Color.FromRgb((byte)color.R, (byte)color.G, (byte)color.B);
+                return Color.FromRgb( (byte)color.R, (byte)color.G, (byte)color.B);
             }
 
             if (colorString.StartsWith("hsla("))
@@ -681,7 +824,7 @@ namespace VectorTileRenderer
                 double.TryParse(segments[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double s);
                 double.TryParse(segments[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double l);
                 double.TryParse(segments[4], NumberStyles.Any, CultureInfo.InvariantCulture, out double a);
-               // Debug.WriteLine("Segments 4: "+ a);
+                // Debug.WriteLine("Segments 4: "+ a);
                 //double a = double.Parse(segments[4]) * 255;
 
                 //var color = (new ColorMine.ColorSpaces.Hsl()
@@ -691,6 +834,7 @@ namespace VectorTileRenderer
                 //    L = l,
                 //}).ToRgb();
                 var color = ColorHelper.FromHsl(h, s, l);
+                //var color = ColorHelper.HSLToRGB(h, s, s);
 
                 return Color.FromArgb((byte)(a * 255), (byte)color.R, (byte)color.G, (byte)color.B);
             }

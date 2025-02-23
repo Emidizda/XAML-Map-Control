@@ -82,9 +82,9 @@ namespace VectorTileRenderer
                 retval.Y *= this.originShift / 180.0;
                 return retval;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -101,7 +101,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -117,7 +117,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -133,7 +133,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -148,7 +148,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -163,7 +163,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -178,7 +178,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -194,7 +194,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -210,7 +210,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -227,7 +227,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -242,7 +242,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -272,7 +272,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -305,7 +305,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -324,7 +324,7 @@ namespace VectorTileRenderer
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw;
             }
         }
 
