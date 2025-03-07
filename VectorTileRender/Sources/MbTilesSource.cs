@@ -27,24 +27,48 @@ namespace VectorTileRenderer.Sources
 
         private GlobalMercator gmt = new GlobalMercator();
 
-        SQLiteConnection sharedConnection;
+        private SQLiteConnection connection;
+
+        public IDictionary<string, string> Metadata { get; } = new Dictionary<string, string>();
 
 
-        public MbTilesSource(string path)
+        public MbTilesSource()
         {
-            this.Path = path;
+            //this.Path = path;
 
-            sharedConnection = new SQLiteConnection(String.Format("Data Source={0};Version=3;Mode=ReadOnly", this.Path));
-            sharedConnection.Open();
+            //sharedConnection = new SQLiteConnection(String.Format("Data Source={0};Version=3;Mode=ReadOnly", this.Path));
+            //sharedConnection.Open();
 
-            loadMetadata();
+          //  loadMetadata();
+        }
+
+        public async Task OpenAsync(string file)
+        {
+            Path = file;
+
+            Close();
+
+            connection = new SQLiteConnection("Data Source=" + System.IO.Path.GetFullPath(file) + ";Read Only=True");
+
+            await connection.OpenAsync();
+
+            await using (var command = new SQLiteCommand("select * from metadata", connection))
+            {
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    Metadata[(string)reader["name"]] = (string)reader["value"];
+                }
+            }
+
         }
 
         private void loadMetadata()
         {
             try
             {
-                using (SQLiteCommand cmd = new SQLiteCommand() { Connection = sharedConnection, CommandText = "SELECT * FROM metadata;" })
+                using (SQLiteCommand cmd = new SQLiteCommand() { Connection = connection, CommandText = "SELECT * FROM metadata;" })
                 {
                     SQLiteDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
@@ -98,7 +122,7 @@ namespace VectorTileRenderer.Sources
         {
             try
             {
-                using (SQLiteCommand cmd = new SQLiteCommand() { Connection = sharedConnection, CommandText = String.Format("SELECT * FROM tiles WHERE tile_column = {0} and tile_row = {1} and zoom_level = {2}", x, y, zoom) })
+                using (SQLiteCommand cmd = new SQLiteCommand() { Connection = connection, CommandText = String.Format("SELECT * FROM tiles WHERE tile_column = {0} and tile_row = {1} and zoom_level = {2}", x, y, zoom) })
                 {
                     SQLiteDataReader reader = cmd.ExecuteReader();
 
@@ -223,6 +247,16 @@ namespace VectorTileRenderer.Sources
         async Task<Stream> ITileSource.GetTile(int x, int y, int zoom)
         {
             return GetRawTile(x, y, zoom);
+        }
+
+        public void Close()
+        {
+            if (connection != null)
+            {
+                Metadata.Clear();
+                connection.Dispose();
+                connection = null;
+            }
         }
     }
 }

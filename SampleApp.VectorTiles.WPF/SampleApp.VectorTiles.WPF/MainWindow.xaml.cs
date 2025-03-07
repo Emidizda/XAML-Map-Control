@@ -30,10 +30,10 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Zurich_mbtiles(object sender, RoutedEventArgs e)
         {
-            int zoom = 5;
-            var coords = gmt.LatLonToTile(47.382047, 8.525868, zoom);
-            //  showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
-            showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 512);
+            int zoom = 14;
+            var coords = gmt.LatLonToTile(59.38653, 10.49005, zoom);
+              showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
+            //showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
 
            // showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 14, 512);
             // zurichMbTilesAliFluxStyle();
@@ -56,7 +56,8 @@ namespace SampleApp.VectorTiles.WPF
             style.FontDirectory = mainDir + @"styles/fonts/";
 
             // set pbf as tile provider
-            var provider = new VectorTileRenderer.Sources.MbTilesSource(path);
+            var provider = new VectorTileRenderer.Sources.MbTilesSource();
+            await provider.OpenAsync(path);
             style.SetSourceProvider(0, provider);
 
             Debug.WriteLine("MaxX: " + maxX + "  - MinX: " + minX);
@@ -126,8 +127,8 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Ot_mbTiles(object sender, RoutedEventArgs e)
         {
-            var coords = gmt.LatLonToTile(47.382047, 8.525868, 12);
-            showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 14, 512);
+            var coords = gmt.LatLonToTile(47.382047, 8.525868, 6);
+            showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 10, 256);
         }
 
         private void Zuric_pbf(object sender, RoutedEventArgs e)

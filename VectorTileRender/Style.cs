@@ -3,12 +3,8 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media;
 using VectorTileRenderer.Helpers;
-using static Mapbox.Vector.Tile.Tile;
-
-//using ClipperLib;
 
 
 namespace VectorTileRenderer

@@ -65,6 +65,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VectorTiles", "VectorTiles"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VectorTileRender", "VectorTileRender\VectorTileRender.csproj", "{E96918B2-DAA6-45ED-89C9-70D5C95DAB61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfMbtilesApp", "SampleApps\WpfMbtilesApp\WpfMbtilesApp.csproj", "{DFEEC178-2D56-4C4B-AC5E-8328C9116B68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -171,6 +173,10 @@ Global
 		{E96918B2-DAA6-45ED-89C9-70D5C95DAB61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E96918B2-DAA6-45ED-89C9-70D5C95DAB61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E96918B2-DAA6-45ED-89C9-70D5C95DAB61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFEEC178-2D56-4C4B-AC5E-8328C9116B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFEEC178-2D56-4C4B-AC5E-8328C9116B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFEEC178-2D56-4C4B-AC5E-8328C9116B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFEEC178-2D56-4C4B-AC5E-8328C9116B68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -200,6 +206,7 @@ Global
 		{DCBE392B-A598-4EEC-8001-30D9FC88A77C} = {7BC11E28-8D3B-4C5B-AC08-AB249CC95F6D}
 		{9E247AA8-8A3F-4562-930B-925CE2879B34} = {CEAD0EA1-A971-4F5F-9EAE-C72F75D1F737}
 		{E96918B2-DAA6-45ED-89C9-70D5C95DAB61} = {A3FE4CF2-E653-4C66-A125-3D48FBAD77CD}
+		{DFEEC178-2D56-4C4B-AC5E-8328C9116B68} = {8F2103C2-78AF-4810-8FB9-67572F50C8FC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {458346DD-B23F-4FDC-8F9D-A10F1882A4DB}
