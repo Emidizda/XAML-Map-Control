@@ -112,7 +112,7 @@ namespace VectorTileRenderer.Sources
                     foreach (Mapbox.Vector.Tile.VectorTileFeature layerInfoVectorTileFeature in layerInfo.VectorTileFeatures)
                     {
                         var vectorFeature = new VectorTileFeature();
-                        vectorFeature.Extent = 1;
+                        vectorFeature.Extent =1;
                         vectorFeature.GeometryType = ConvertGeometryType(layerInfoVectorTileFeature.GeometryType);
                         vectorFeature.Attributes = layerInfoVectorTileFeature.Attributes.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 

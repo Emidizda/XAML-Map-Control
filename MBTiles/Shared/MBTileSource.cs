@@ -34,7 +34,7 @@ namespace MapControl.MBTiles
 
             await connection.OpenAsync();
 
-            await using (var command = new SQLiteCommand("select * from metadata", connection))
+            using (var command = new SQLiteCommand("select * from metadata", connection))
             {
                 var reader = await command.ExecuteReaderAsync();
 

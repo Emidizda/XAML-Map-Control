@@ -2,10 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Effects;
 
 namespace VectorTileRenderer.Sources
 {
@@ -42,6 +44,16 @@ namespace VectorTileRenderer.Sources
           //  loadMetadata();
         }
 
+        public void LoadOldMethod(string path)
+        {
+            this.Path = path;
+
+            connection = new SQLiteConnection(String.Format("Data Source={0};Version=3;Mode=ReadOnly", this.Path));
+            connection.Open();
+
+            loadMetadata();
+        }
+
         public async Task OpenAsync(string file)
         {
             Path = file;
@@ -62,6 +74,47 @@ namespace VectorTileRenderer.Sources
                 }
             }
 
+            UpdateLoadedProperty();
+
+        }
+
+        private void UpdateLoadedProperty()
+        {
+            try
+            {
+                if (Metadata.TryGetValue("name", out var name))
+                {
+                    Name = name;
+                }
+                if (Metadata.TryGetValue("description", out var description))
+                {
+                    Description = description;
+                }
+                if (Metadata.TryGetValue("minzoom", out var value) && int.TryParse(value, out int minZoom))
+                {
+                    MinZoom = minZoom;
+                }
+                if (Metadata.TryGetValue("maxzoom", out value) && int.TryParse(value, out var maxZoom))
+                {
+                    MaxZoom = maxZoom;
+                }
+
+                if (Metadata.TryGetValue("bounds", out value))
+                {
+                    string val = value;
+                    string[] vals = val.Split(new char[] { ',' });
+                    double.TryParse(vals[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double west);
+                    double.TryParse(vals[1], NumberStyles.Any, CultureInfo.InvariantCulture, out double south);
+                    double.TryParse(vals[2], NumberStyles.Any, CultureInfo.InvariantCulture, out double east);
+                    double.TryParse(vals[3], NumberStyles.Any, CultureInfo.InvariantCulture, out double north);
+                    this.Bounds = new GlobalMercator.GeoExtent() { West = west, South = south, East = east, North = north };
+                }
+
+            }
+            catch (Exception e)
+            {
+                Debug.Write("Failed to obtain metadata: " + e);
+            }
         }
 
         private void loadMetadata()
@@ -118,7 +171,7 @@ namespace VectorTileRenderer.Sources
             }
         }
 
-        public Stream GetRawTile(int x, int y, int zoom)
+        public async Task<Stream> GetRawTile(int x, int y, int zoom)
         {
             try
             {
@@ -141,18 +194,30 @@ namespace VectorTileRenderer.Sources
             return null;
         }
 
-        public void ExtractTile(int x, int y, int zoom, string path)
+        public async Task<Stream> ReadRawBufferAsync(int x, int y, int zoomLevel)
         {
-            if (File.Exists(path))
-                System.IO.File.Delete(path);
-
-            using (var fileStream = File.Create(path))
-            using (Stream tileStream = GetRawTile(x, y, zoom))
+            using (var command = new SQLiteCommand("select tile_data from tiles where zoom_level=@z and tile_column=@x and tile_row=@y", connection))
             {
-                tileStream.Seek(0, SeekOrigin.Begin);
-                tileStream.CopyTo(fileStream);
+                command.Parameters.AddWithValue("@z", zoomLevel);
+                command.Parameters.AddWithValue("@x", x);
+                command.Parameters.AddWithValue("@y", (1 << zoomLevel) - y - 1);
+
+                return await command.ExecuteScalarAsync() as Stream;
             }
         }
+
+        //public void ExtractTile(int x, int y, int zoom, string path)
+        //{
+        //    if (File.Exists(path))
+        //        System.IO.File.Delete(path);
+
+        //    using (var fileStream = File.Create(path))
+        //    using (Stream tileStream = GetRawTile(x, y, zoom))
+        //    {
+        //        tileStream.Seek(0, SeekOrigin.Begin);
+        //        tileStream.CopyTo(fileStream);
+        //    }
+        //}
 
         public async Task<VectorTile> GetVectorTile(int x, int y, int zoom)
         {
@@ -215,8 +280,10 @@ namespace VectorTileRenderer.Sources
 
                 return actualTile;
 
-            } catch(Exception e)
+            } 
+            catch(Exception e)
             {
+                Debug.WriteLine("Exception in get vector tile: " + e);
                 return null;
             }
         }
@@ -234,7 +301,7 @@ namespace VectorTileRenderer.Sources
 
                 using (var rawTileStream = GetRawTile(x, y, zoom))
                 {
-                    var pbfTileProvider = new PbfTileSource(rawTileStream);
+                    var pbfTileProvider = new PbfTileSource(rawTileStream.Result);
                     var tile = pbfTileProvider.GetVectorTile(x, y, zoom).Result;
                     tileCache[key] = tile;
 
@@ -246,7 +313,7 @@ namespace VectorTileRenderer.Sources
 
         async Task<Stream> ITileSource.GetTile(int x, int y, int zoom)
         {
-            return GetRawTile(x, y, zoom);
+            return GetRawTile(x, y, zoom).Result;
         }
 
         public void Close()

@@ -30,13 +30,14 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Zurich_mbtiles(object sender, RoutedEventArgs e)
         {
-            int zoom = 14;
+            int zoom = 3;
             var coords = gmt.LatLonToTile(59.38653, 10.49005, zoom);
-              showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
-            //showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", coords.X, coords.Y, coords.X, coords.Y, zoom, 256);
+            var zurichCoords = gmt.LatLonToTile(43.80384274141475, 10.28744731721384, zoom);
+             //showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", zurichCoords.X, zurichCoords.Y, zurichCoords.X, zurichCoords.Y, zoom, 512);
+            showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", zurichCoords.X, zurichCoords.Y, zurichCoords.X, zurichCoords.Y, zoom, 512);
 
            // showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 14, 512);
-            // zurichMbTilesAliFluxStyle();
+           //  zurichMbTilesAliFluxStyle();
             // showMbTiles(mainDir + @"tiles/islamabad.mbtiles", mainDir + @"styles/bright-style.json", 1438, 1226, 1440, 1228, 11, 512);
             //showPbf(mainDir + @"tiles/islamabad.pbf", mainDir + @"styles/basic-style.json", 11, 512, 2);
             //  showPbf(mainDir + @"tiles/zurich.pbf.gz", mainDir + @"styles/basic-style.json", 14);
@@ -57,6 +58,7 @@ namespace SampleApp.VectorTiles.WPF
 
             // set pbf as tile provider
             var provider = new VectorTileRenderer.Sources.MbTilesSource();
+           // provider.LoadOldMethod(path);
             await provider.OpenAsync(path);
             style.SetSourceProvider(0, provider);
 
