@@ -4,6 +4,7 @@
         xmlns:map="clr-namespace:MapControl;assembly=MapControl.WPF"
         xmlns:tools="clr-namespace:MapControl.UiTools;assembly=MapUiTools.WPF"
         xmlns:local="clr-namespace:SampleApplication"
+        xmlns:mbTiles="clr-namespace:MapControl.MBTiles;assembly=MBTiles.WPF"
         Title="XAML MapControl - WPF Sample Application" Height="600" Width="900"
         Stylus.IsPressAndHoldEnabled="False">
 
@@ -199,6 +200,9 @@
                         TileSource="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                         SourceName="OpenStreetMap"
                         Description="© [OpenStreetMap contributors](http://www.openstreetmap.org/copyright)"/>
+                </tools:MapLayerItem>
+                <tools:MapLayerItem Text="Vector tiles Test">
+                    <mbTiles:MBVectorTileLayer File="C:/GitRepos/VectorMaps/XAML-Map-Control/tiles/zurich.mbtiles" StylePath="C:/GitRepos/VectorMaps/XAML-Map-Control/styles/basic-style.json"/>
                 </tools:MapLayerItem>
                 <tools:MapLayerItem Text="OpenStreetMap German">
                     <map:MapTileLayer

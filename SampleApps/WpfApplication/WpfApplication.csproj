@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFrameworks>net9.0-windows;net48</TargetFrameworks>
+        <TargetFrameworks>net9.0-windows</TargetFrameworks>
         <UseWPF>true</UseWPF>
         <RootNamespace>SampleApplication</RootNamespace>
         <AssemblyTitle>XAML Map Control WPF Sample Application</AssemblyTitle>
@@ -19,6 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\MapControl\WPF\MapControl.WPF.csproj" />
         <ProjectReference Include="..\..\MapUiTools\WPF\MapUiTools.WPF.csproj" />
+        <ProjectReference Include="..\..\MBTiles\WPF\MBTiles.WPF.csproj" />
     </ItemGroup>
 
     <ItemGroup>
