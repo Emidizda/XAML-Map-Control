@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace MapControl.MBTiles
@@ -21,13 +23,15 @@ namespace MapControl.MBTiles
 
         public string StylePath
         {
-            get;
-            set;
+            get => (string)GetValue(StyleProperty);
+            set => SetValue(StyleProperty, value);
         }
 
-        protected virtual async Task<MBVectorTileSource> CreateTileSourceAsync(string file)
+        protected virtual async Task<MBVectorTileSource> CreateTileSourceAsync(string file, string stylePath)
         {
             var tileSource = new MBVectorTileSource();
+
+            await tileSource.OpenAsync(file, stylePath);
 
 
             return tileSource;
@@ -35,19 +39,21 @@ namespace MapControl.MBTiles
 
         private async Task StylePathPropertyChanged(string file)
         {
-            (TileSource as MBVectorTileSource)?.Close();
-
-            ClearValue(TileSourceProperty);
-            ClearValue(SourceNameProperty);
-            ClearValue(DescriptionProperty);
-            ClearValue(MinZoomLevelProperty);
-            ClearValue(MaxZoomLevelProperty);
-
-
-
+            if (!string.IsNullOrEmpty(File) && !string.IsNullOrEmpty(StylePath))
+            {
+                await ConnectToDatabase(File, StylePath);
+            }
         }
 
         private async Task FilePropertyChanged(string file)
+        {
+            if (!string.IsNullOrEmpty(File) && !string.IsNullOrEmpty(StylePath))
+            {
+                await ConnectToDatabase(File, StylePath);
+            }
+        }
+
+        private async Task ConnectToDatabase(string filePath, string stylePath)
         {
             (TileSource as MBVectorTileSource)?.Close();
 
@@ -56,6 +62,44 @@ namespace MapControl.MBTiles
             ClearValue(DescriptionProperty);
             ClearValue(MinZoomLevelProperty);
             ClearValue(MaxZoomLevelProperty);
+
+            if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(stylePath))
+            {
+                try
+                {
+                    var tileSource = await CreateTileSourceAsync(filePath, stylePath);
+
+                    TileSource = tileSource;
+
+                    if (tileSource.Metadata.TryGetValue("name", out string value))
+                    {
+                        SourceName = value;
+                    }
+
+                    if (tileSource.Metadata.TryGetValue("description", out value))
+                    {
+                        Description = value;
+                    }
+
+                    if (tileSource.Metadata.TryGetValue("minzoom", out value) && int.TryParse(value, out int zoomLevel))
+                    {
+                        MinZoomLevel = zoomLevel;
+                    }
+
+                    if (tileSource.Metadata.TryGetValue("maxzoom", out value) && int.TryParse(value, out zoomLevel))
+                    {
+                        MaxZoomLevel = zoomLevel;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine("Failed to get out map information: " + e);
+                }
+            }
+            
+
+         
         }
 
     }

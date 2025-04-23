@@ -30,11 +30,11 @@ namespace SampleApp.VectorTiles.WPF
 
         private void Zurich_mbtiles(object sender, RoutedEventArgs e)
         {
-            int zoom = 3;
+            int zoom = 14;
             var coords = gmt.LatLonToTile(59.38653, 10.49005, zoom);
             var zurichCoords = gmt.LatLonToTile(43.80384274141475, 10.28744731721384, zoom);
             showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", zurichCoords.X, zurichCoords.Y, zurichCoords.X, zurichCoords.Y, zoom, 512);
-            //showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", zurichCoords.X, zurichCoords.Y, zurichCoords.X, zurichCoords.Y, zoom, 512);
+          //  showMbTiles(mainDir + @"tiles/worldOT.mbtiles", mainDir + @"styles/basic-style.json", zurichCoords.X, zurichCoords.Y, zurichCoords.X, zurichCoords.Y, zoom, 512);
 
            // showMbTiles(mainDir + @"tiles/zurich.mbtiles", mainDir + @"styles/basic-style.json", 8579, 10645, 8581, 10647, 14, 512);
            //  zurichMbTilesAliFluxStyle();

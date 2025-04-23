@@ -117,7 +117,7 @@
     <Grid>
         <map:Map x:Name="map"
                  MinZoomLevel="2" MaxZoomLevel="21" ZoomLevel="11"
-                 Center="53.5,8.2"
+                 Center="8.542693, 47.368659"
                  ManipulationMode="All"
                  MouseLeftButtonDown="MapMouseLeftButtonDown"
                  MouseRightButtonDown="MapMouseRightButtonDown"
@@ -202,7 +202,10 @@
                         Description="© [OpenStreetMap contributors](http://www.openstreetmap.org/copyright)"/>
                 </tools:MapLayerItem>
                 <tools:MapLayerItem Text="Vector tiles Test">
-                    <mbTiles:MBVectorTileLayer File="C:/GitRepos/VectorMaps/XAML-Map-Control/tiles/zurich.mbtiles" StylePath="C:/GitRepos/VectorMaps/XAML-Map-Control/styles/basic-style.json"/>
+                    <mbTiles:MBVectorTileLayer File="C:/GitRepos/VectorMaps/XAML-Map-Control/tiles/zurich.mbtiles" StylePath="C:/GitRepos/VectorMaps/XAML-Map-Control/styles/aliflux-style.json"/>
+                </tools:MapLayerItem>
+                <tools:MapLayerItem Text="MBtiles jpeg">
+                    <mbTiles:MBTileLayer File="C:/Geoserver/GeoNorge_Sjøkart_Horten.mbtiles" />
                 </tools:MapLayerItem>
                 <tools:MapLayerItem Text="OpenStreetMap German">
                     <map:MapTileLayer
