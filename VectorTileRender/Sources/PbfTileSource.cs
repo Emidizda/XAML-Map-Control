@@ -118,7 +118,7 @@ namespace VectorTileRenderer.Sources
 
                         var vectorGeometry = new List<List<Point>>();
 
-                        foreach (List<Coordinate> coordinates in layerInfoVectorTileFeature.Geometry)
+                        foreach (ArraySegment<Coordinate> coordinates in layerInfoVectorTileFeature.Geometry)
                         {
                             var vectorPoints = new List<Point>();
                             foreach (Coordinate coordinate in coordinates)
