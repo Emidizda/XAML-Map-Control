@@ -303,6 +303,67 @@ namespace VectorTileRenderer
                             }
                         }
                     }
+                    else
+                    {
+                        var tileLayers = categorizedVectorLayers.FirstOrDefault();
+
+                        foreach (var tileLayer in tileLayers.Value)
+                        {
+                            foreach (var feature in tileLayer.Features)
+                            {
+                                //var geometry = localizeGeometry(feature.Geometry, sizeX, sizeY, feature.Extent);
+                                var attributes = new Dictionary<string, object>(feature.Attributes);
+
+                                attributes["$type"] = feature.GeometryType;
+                                attributes["$id"] = layer.ID;
+                                attributes["$zoom"] = actualZoom;
+
+                                //if ((string)attributes["$type"] == "Point")
+                                //{
+                                //    if (attributes.ContainsKey("class"))
+                                //    {
+                                //        if ((string)attributes["class"] == "country")
+                                //        {
+                                //            if (layer.ID == "country_label")
+                                //            {
+
+                                //            }
+                                //        }
+                                //    }
+                                //}
+
+                                if (style.ValidateLayer(layer, actualZoom, attributes))
+                                {
+                                    var brush = style.ParseStyle(layer, scale, attributes);
+
+                                    if (!brush.Paint.Visibility)
+                                    {
+                                        continue;
+                                    }
+
+                                    visualLayers.Add(new VisualLayer()
+                                    {
+                                        Type = VisualLayerType.Vector,
+                                        VectorTileFeature = feature,
+                                        Geometry = feature.Geometry,
+                                        Brush = brush,
+                                    });
+                                }
+                                else
+                                {
+                                    //ADD a default color??
+                                    visualLayers.Add(new VisualLayer()
+                                    {
+                                        Type = VisualLayerType.Vector,
+                                        VectorTileFeature = feature,
+                                        Geometry = feature.Geometry,
+                                        Brush = style.ParseStyle(layer, scale, attributes)
+                                    });
+                                }
+                            }
+                        }
+
+                    }
 
                 }
                 else if (layer.Type == "background")
