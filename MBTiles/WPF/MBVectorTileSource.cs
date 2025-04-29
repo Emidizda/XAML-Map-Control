@@ -28,7 +28,8 @@ namespace MapControl.MBTiles
 
         public void Close()
         {
-
+            style.Cleanup();
+            provider.Close();
         }
 
         public override async Task<ImageSource> LoadImageAsync(int x, int y, int zoomLevel)
@@ -38,7 +39,7 @@ namespace MapControl.MBTiles
             try
             {
                 var newY = (1 << zoomLevel) - y - 1;
-                image = Renderer.Render(style, canvas, x, newY, zoomLevel, 256, 256, 1).Result;
+                image =   Renderer.Render(style, canvas, x, newY, zoomLevel, 256, 256, 1).Result;
             }
             catch (Exception e)
             {

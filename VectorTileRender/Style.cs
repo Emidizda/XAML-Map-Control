@@ -135,6 +135,14 @@ namespace VectorTileRenderer
 
         public string FontDirectory { get; set; } = null;
 
+        public void Cleanup()
+        {
+            Layers?.Clear();
+            Sources?.Clear();
+            Metadata?.Clear();
+
+        }
+
         public Style(string path, double scale = 1)
         {
             ParseStyleJson(path, scale);
@@ -1030,7 +1038,7 @@ namespace VectorTileRenderer
                     var valueA = (IComparable)attributes[key];
                     var valueB = getValue(filterArray[2], attributes);
 
-                    if (isNumber(valueA) && isNumber(valueB))
+                    if (IsNumber(valueA) && IsNumber(valueB))
                     {
                         valueA = Convert.ToDouble(valueA);
                         valueB = Convert.ToDouble(valueB);
@@ -1228,7 +1236,7 @@ namespace VectorTileRenderer
 
                     //var referenceElement = (stops[0] as object[])[1];
 
-                    return interpolateValues(pointStops[zoomAIndex].Item2, pointStops[zoomBIndex].Item2, zoomA, zoomB, zoom, power, false);
+                    return InterpolateValues(pointStops[zoomAIndex].Item2, pointStops[zoomBIndex].Item2, zoomA, zoomB, zoom, power, false);
 
                 }
             }
@@ -1259,7 +1267,7 @@ namespace VectorTileRenderer
             return token;
         }
 
-        bool isNumber(object value)
+        bool IsNumber(object value)
         {
             return value is sbyte
                     || value is byte
@@ -1274,7 +1282,7 @@ namespace VectorTileRenderer
                     || value is decimal;
         }
 
-        private object interpolateValues(object startValue, object endValue, double zoomA, double zoomB, double zoom, double power, bool clamp = false)
+        private object InterpolateValues(object startValue, object endValue, double zoomA, double zoomB, double zoom, double power, bool clamp = false)
         {
             if (startValue is string)
             {
@@ -1314,19 +1322,19 @@ namespace VectorTileRenderer
                     var minValue = startArray[i];
                     var maxValue = endArray[i];
 
-                    var value = interpolateValues(minValue, maxValue, zoomA, zoomB, zoom, power, clamp);
+                    var value = InterpolateValues(minValue, maxValue, zoomA, zoomB, zoom, power, clamp);
 
                     result.Add(value);
                 }
 
                 return result.ToArray();
             }
-            else if (isNumber(startValue))
+            else if (IsNumber(startValue))
             {
                 var minValue = Convert.ToDouble(startValue);
                 var maxValue = Convert.ToDouble(endValue);
 
-                return interpolateRange(zoom, zoomA, zoomB, minValue, maxValue, power, clamp);
+                return InterpolateRange(zoom, zoomA, zoomB, minValue, maxValue, power, clamp);
             }
             else
             {
@@ -1334,7 +1342,7 @@ namespace VectorTileRenderer
             }
         }
 
-        private double interpolateRange(double oldValue, double oldMin, double oldMax, double newMin, double newMax, double power, bool clamp = false)
+        private double InterpolateRange(double oldValue, double oldMin, double oldMax, double newMin, double newMax, double power, bool clamp = false)
         {
             double difference = oldMax - oldMin;
             double progress = oldValue - oldMin;

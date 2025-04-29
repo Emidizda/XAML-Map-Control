@@ -105,7 +105,7 @@ namespace VectorTileRenderer.Sources
 
                 foreach (var layerInfo in layerInfos)
                 {
-                    Debug.WriteLine(layerInfo.Name);
+                   // Debug.WriteLine(layerInfo.Name);
                     var vectorLayer = new VectorTileLayer();
                     vectorLayer.Name = layerInfo.Name;
 
