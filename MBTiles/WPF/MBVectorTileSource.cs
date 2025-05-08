@@ -11,14 +11,15 @@ namespace MapControl.MBTiles
     {
         Style style;
         VectorTileRenderer.Sources.MbTilesSource provider;
-        string cachePath;
+        string _cachePath = String.Empty;
       
         public IDictionary<string, string> Metadata => provider.Metadata;
 
-        public async Task OpenAsync(string file, string stylePath)
+        public async Task OpenAsync(string file, string stylePath, string cachePath = "")
         {
             style = new Style(stylePath);
             style.FontDirectory = @"styles/fonts/";
+            _cachePath = cachePath;
 
             provider = new VectorTileRenderer.Sources.MbTilesSource();
             await provider.OpenAsync(file);
@@ -39,7 +40,15 @@ namespace MapControl.MBTiles
             try
             {
                 var newY = (1 << zoomLevel) - y - 1;
-                image =   Renderer.Render(style, canvas, x, newY, zoomLevel, 256, 256, 1).Result;
+                if (_cachePath != String.Empty)
+                {
+                    image = Renderer.RenderCached(_cachePath, style, canvas, x, newY, zoomLevel, 256, 256, 1).Result;
+                }
+                else
+                {
+                    image = Renderer.Render(style, canvas, x, newY, zoomLevel, 256, 256, 1).Result;
+                }
+                  
             }
             catch (Exception e)
             {

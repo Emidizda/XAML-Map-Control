@@ -27,14 +27,32 @@ namespace MapControl.MBTiles
             set => SetValue(StyleProperty, value);
         }
 
-        protected virtual async Task<MBVectorTileSource> CreateTileSourceAsync(string file, string stylePath)
+        public static readonly DependencyProperty CacheProperty =
+            DependencyPropertyHelper.Register<MBVectorTileLayer, string>(nameof(CachePath), null,
+                async (layer, oldValue, newValue) => await layer.CachePathPropertyChanged(newValue));
+
+        public string CachePath
+        {
+            get => (string)GetValue(CacheProperty);
+            set => SetValue(CacheProperty, value);
+        }
+
+        protected virtual async Task<MBVectorTileSource> CreateTileSourceAsync(string file, string stylePath, string cachePath = "")
         {
             var tileSource = new MBVectorTileSource();
 
-            await tileSource.OpenAsync(file, stylePath);
+            await tileSource.OpenAsync(file, stylePath, cachePath);
 
 
             return tileSource;
+        }
+
+        private async Task CachePathPropertyChanged(string filePath)
+        {
+            if (!string.IsNullOrEmpty(File) && !string.IsNullOrEmpty(StylePath) && !string.IsNullOrEmpty(CachePath))
+            {
+                await ConnectToDatabase(File, StylePath, CachePath);
+            }
         }
 
         private async Task StylePathPropertyChanged(string file)
@@ -53,7 +71,7 @@ namespace MapControl.MBTiles
             }
         }
 
-        private async Task ConnectToDatabase(string filePath, string stylePath)
+        private async Task ConnectToDatabase(string filePath, string stylePath, string cachePath = "")
         {
             (TileSource as MBVectorTileSource)?.Close();
 
@@ -67,7 +85,7 @@ namespace MapControl.MBTiles
             {
                 try
                 {
-                    var tileSource = await CreateTileSourceAsync(filePath, stylePath);
+                    var tileSource = await CreateTileSourceAsync(filePath, stylePath, cachePath);
 
                     TileSource = tileSource;
 
