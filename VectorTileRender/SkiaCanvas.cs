@@ -17,7 +17,6 @@ namespace VectorTileRenderer
         WriteableBitmap _bitmap;
         SKSurface _surface;
         SKCanvas _canvas;
-
         public bool ClipOverflow { get; set; } = false;
         private Rect _clipRectangle;
         //List<IntPoint> clipRectanglePath;
